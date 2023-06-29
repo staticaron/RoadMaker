@@ -1,0 +1,54 @@
+{
+    "name": "RoadMakerInputAsset",
+    "maps": [
+        {
+            "name": "General",
+            "id": "ea23bc81-7507-4737-ba3a-8bfa08634918",
+            "actions": [
+                {
+                    "name": "CreateRoad",
+                    "type": "Button",
+                    "id": "83132f00-df47-4c55-b2d1-556049aaee86",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Decline",
+                    "type": "Button",
+                    "id": "396cee70-f0e7-4d45-aca3-938efbf5482e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9ca016b7-b8a3-49aa-a0ee-df90d590e092",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CreateRoad",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4ebe2b35-6ee8-4bb9-957c-d23a9294e815",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Decline",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
