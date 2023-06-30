@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &392861849
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 392861850}
+  m_Layer: 0
+  m_Name: RoadCursor
+  m_TagString: Untagged
+  m_Icon: {fileID: 8418204508859773708, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &392861850
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 392861849}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2146305633}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -218,6 +249,7 @@ GameObject:
   - component: {fileID: 2146305633}
   - component: {fileID: 2146305635}
   - component: {fileID: 2146305634}
+  - component: {fileID: 2146305636}
   m_Layer: 0
   m_Name: RoadMaker
   m_TagString: Untagged
@@ -236,7 +268,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 392861850}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -314,7 +347,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3477f16cb57f0a34db079829180d686e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadMakerInput: {fileID: 0}
+  roadMakerInput: {fileID: 2146305634}
   roadPlacementWay: 3
   startPoint: {x: 0, y: 0}
   endPoint: {x: 0, y: 0}
+  pointGap: 0.25
+  minEndPointDistance: 1
+  pointGO: {fileID: 3299966691715427507, guid: 97b7aeb5c2f1da44cbe289e0b9b90228, type: 3}
+  roadCursor: {fileID: 2146305636}
+--- !u!114 &2146305636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146305632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb480a0daa049254e973013b03e479aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roadCursor: {fileID: 392861850}
+  roadGenerator: {fileID: 2146305635}
+  snapDistance: 0.5
+  closestPoint: {x: 0, y: 0}
