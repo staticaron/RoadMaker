@@ -5,108 +5,124 @@ using UnityEngine.InputSystem;
 
 public enum RoadPlacementWay
 {
-    CONSTRUCTING, PLACED, CANCELLED, NONE
+	CONSTRUCTING, PLACED, CANCELLED, NONE
 }
 
 public class RoadGenerator : MonoBehaviour
 {
-    [SerializeField] PlayerInput roadMakerInput;
+	[Header("Road Settings")]
+	[SerializeField] RoadPlacementWay roadPlacementWay = RoadPlacementWay.NONE;
 
-    [SerializeField] RoadPlacementWay roadPlacementWay = RoadPlacementWay.NONE;
+	[SerializeField] Vector2 startPoint;
+	[SerializeField] Vector2 endPoint;
 
-    [SerializeField] Vector2 startPoint;
-    [SerializeField] Vector2 endPoint;
+	[SerializeField] float pointGap;
+	[SerializeField] float minEndPointDistance;
 
-    [SerializeField] float pointGap;
-    [SerializeField] float minEndPointDistance;
+	[SerializeField] GameObject pointGO;
+	[SerializeField] RoadCursor roadCursor;
 
-    [SerializeField] GameObject pointGO;
-    [SerializeField] RoadCursor roadCursor;
+	[Header("Road Visuals")]
+	[SerializeField] Sprite roadSprite;
+	[SerializeField] GameObject roadPrefab;
 
-    private List<Vector2> points;
+	private List<Vector2> points;
 
-    private Camera mainCamera;
+	private Camera mainCamera;
+	private SpriteRenderer sampleRoad;
 
-    private void Awake()
-    {
-        roadMakerInput = GetComponent<PlayerInput>();
+	private void Awake()
+	{
+		if (mainCamera == null)
+			mainCamera = Camera.main;
 
-        if (mainCamera == null)
-            mainCamera = Camera.main;
+		points = new List<Vector2>();
+	}
 
-        points = new List<Vector2>();
-    }
+	private void Update()
+	{
+		if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING)
+		{
+			if (sampleRoad == null) sampleRoad = (Instantiate<GameObject>(roadPrefab, startPoint, Quaternion.identity)).GetComponent<SpriteRenderer>();
 
-    public void CreateRoadInput(InputAction.CallbackContext context)
-    {
-        switch (context.phase)
-        {
-            case InputActionPhase.Performed:
+			Vector2 directionDelta = (roadCursor.GetRoadCursorPosition() - startPoint);
+			float directionLength = Mathf.Sqrt(Vector2.SqrMagnitude(directionDelta));
 
-                if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING) return;
+			sampleRoad.transform.up = directionDelta.normalized;
 
-                startPoint = roadCursor.GetRoadCursorPosition();
-                roadPlacementWay = RoadPlacementWay.CONSTRUCTING;
+			sampleRoad.size = new Vector2(1, directionLength);
+			sampleRoad.color = new Color(sampleRoad.color.r, sampleRoad.color.g, sampleRoad.color.b, 0.5f);
+		}
+	}
 
-                break;
+	public void CreateRoadInput(InputAction.CallbackContext context)
+	{
+		switch (context.phase)
+		{
+			case InputActionPhase.Performed:
 
-            case InputActionPhase.Canceled:
+				if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING) return;
 
-                if (roadPlacementWay != RoadPlacementWay.CONSTRUCTING) return;
+				startPoint = roadCursor.GetRoadCursorPosition();
+				roadPlacementWay = RoadPlacementWay.CONSTRUCTING;
 
-                endPoint = roadCursor.GetRoadCursorPosition();
+				break;
 
-                if (Vector2.SqrMagnitude(endPoint - startPoint) <= minEndPointDistance * minEndPointDistance)
-                {
-                    roadPlacementWay = RoadPlacementWay.CANCELLED;
-                    return;
-                }
+			case InputActionPhase.Canceled:
 
-                roadPlacementWay = RoadPlacementWay.PLACED;
+				if (roadPlacementWay != RoadPlacementWay.CONSTRUCTING) return;
 
-                AddPoints();
+				endPoint = roadCursor.GetRoadCursorPosition();
 
-                break;
-        }
-    }
+				if (Vector2.SqrMagnitude(endPoint - startPoint) <= minEndPointDistance * minEndPointDistance)
+				{
+					roadPlacementWay = RoadPlacementWay.CANCELLED;
+					return;
+				}
 
-    public void Decline(InputAction.CallbackContext context)
-    {
-        if (context.phase != InputActionPhase.Performed) return;
+				roadPlacementWay = RoadPlacementWay.PLACED;
 
-        if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING) roadPlacementWay = RoadPlacementWay.CANCELLED;
-    }
+				AddPoints();
 
-    private void AddPoints()
-    {
-        Vector2 roadDirection = (endPoint - startPoint).normalized;
+				sampleRoad.color = new Color(sampleRoad.color.r, sampleRoad.color.g, sampleRoad.color.b, 1.0f);
+				sampleRoad = null;
 
-        Vector2 point = startPoint;
-        float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
+				break;
+		}
+	}
 
-        while (endPointDistance > pointGap)
-        {
-            points.Add(point);
+	public void Decline(InputAction.CallbackContext context)
+	{
+		if (context.phase != InputActionPhase.Performed) return;
+
+		if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING)
+		{
+			roadPlacementWay = RoadPlacementWay.CANCELLED;
+			Destroy(sampleRoad.gameObject);
+			sampleRoad = null;
+		}
+	}
+
+	private void AddPoints()
+	{
+		Vector2 roadDirection = (endPoint - startPoint).normalized;
+
+		Vector2 point = startPoint;
+		float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
+
+		while (endPointDistance > pointGap)
+		{
+			points.Add(point);
 
 			point += (roadDirection * pointGap);
-            endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
-        }
+			endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
+		}
 
-        points.Add(endPoint);
+		points.Add(endPoint);
+	}
 
-        SpawnObjects();
-    }
-
-    private void SpawnObjects()
-    {
-        foreach (Vector2 point in points)
-        {
-            Instantiate<GameObject>(pointGO, point, Quaternion.identity);
-        }
-    }
-
-    public List<Vector2> GetPoints()
-    {
-        return points;
-    }
+	public List<Vector2> GetPoints()
+	{
+		return points;
+	}
 }

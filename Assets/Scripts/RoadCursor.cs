@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(RoadGenerator))]
 public class RoadCursor : MonoBehaviour
 {
     [SerializeField] Transform roadCursor;
+	[SerializeField] float snapDistance;
 
-    [SerializeField] RoadGenerator roadGenerator;
-
-    [SerializeField] float snapDistance;
-
-    [SerializeField] Vector2 closestPoint;
+    private RoadGenerator roadGenerator;
 
     private Camera mainCam;
 
     private void Awake()
     {
         mainCam = Camera.main;
+		roadGenerator = GetComponent<RoadGenerator>();
     }
 
     private void Update()
@@ -30,7 +29,7 @@ public class RoadCursor : MonoBehaviour
         {
 			#region Get Snapping Point
 
-			closestPoint = points[0];
+			Vector2 closestPoint = points[0];
 			float closestDistance = Mathf.Sqrt(Vector2.SqrMagnitude(points[0] - mousePos));
 
 			for (int i = 1; i < points.Count; i++)
