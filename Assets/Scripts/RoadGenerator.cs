@@ -8,6 +8,18 @@ public enum RoadPlacementWay
 	CONSTRUCTING, PLACED, CANCELLED, NONE
 }
 
+public struct RoadPoint
+{
+	public GameObject parentRoadObject;
+	public Vector2 position;
+
+	public RoadPoint(GameObject parent, Vector2 position)
+	{
+		this.parentRoadObject = parent;
+		this.position = position;
+	}
+}
+
 public class RoadGenerator : MonoBehaviour
 {
 	[Header("Road Settings")]
@@ -26,7 +38,7 @@ public class RoadGenerator : MonoBehaviour
 	[SerializeField] Sprite roadSprite;
 	[SerializeField] GameObject roadPrefab;
 
-	private List<Vector2> points;
+	private Dictionary<int, List<RoadPoint>> points;
 
 	private Camera mainCamera;
 	private SpriteRenderer sampleRoad;
@@ -36,7 +48,7 @@ public class RoadGenerator : MonoBehaviour
 		if (mainCamera == null)
 			mainCamera = Camera.main;
 
-		points = new List<Vector2>();
+		points = new Dictionary<int, List<RoadPoint>>();
 	}
 
 	private void Update()
@@ -80,9 +92,9 @@ public class RoadGenerator : MonoBehaviour
 
 				roadPlacementWay = RoadPlacementWay.PLACED;
 
-				AddPoints();
+				List<RoadPoint> newPoints = AddPoints(sampleRoad.gameObject);
 
-				sampleRoad.GetComponent<RoadPiece>().FinishPlacement();
+				sampleRoad.GetComponent<RoadPiece>().FinishPlacement(newPoints);
 				sampleRoad = null;
 
 				break;
@@ -101,26 +113,44 @@ public class RoadGenerator : MonoBehaviour
 		}
 	}
 
-	private void AddPoints()
+	private List<RoadPoint> AddPoints(GameObject parent)
 	{
+		List<RoadPoint> newPoints = new List<RoadPoint>();
+
 		Vector2 roadDirection = (endPoint - startPoint).normalized;
 
-		Vector2 point = startPoint;
-		float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
+		RoadPoint point = new RoadPoint(parent, startPoint);
+		float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point.position));
 
 		while (endPointDistance > pointGap)
 		{
-			points.Add(point);
+			newPoints.Add(point);
 
-			point += (roadDirection * pointGap);
-			endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point));
+			point = new RoadPoint(parent, point.position + (roadDirection * pointGap));
+			endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point.position));
 		}
 
-		points.Add(endPoint);
+		newPoints.Add(new RoadPoint(parent, endPoint));
+
+		points.Add(parent.GetInstanceID(), newPoints);
+
+		return newPoints;
 	}
 
-	public List<Vector2> GetPoints()
+	public Dictionary<int, List<RoadPoint>> GetPoints()
 	{
 		return points;
+	}
+
+	public void DeleteRoad(InputAction.CallbackContext context)
+	{
+		if (context.phase != InputActionPhase.Performed) return;
+
+		GameObject currentSnappedPointParent = roadCursor.GetCurrentlySnappedPoint()?.parentRoadObject;
+
+		if (currentSnappedPointParent == null) return;
+
+		points.Remove(currentSnappedPointParent.GetInstanceID());
+		Destroy(currentSnappedPointParent);
 	}
 }

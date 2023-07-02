@@ -383,6 +383,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 396cee70-f0e7-4d45-aca3-938efbf5482e
     m_ActionName: General/Decline[/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2146305635}
+        m_TargetAssemblyTypeName: RoadGenerator, Assembly-CSharp
+        m_MethodName: DeleteRoad
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 51b52fad-b2bf-4b93-96e3-0240ad8eb025
+    m_ActionName: General/DestroyRoad[/Keyboard/space]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: General
@@ -423,3 +439,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roadCursor: {fileID: 392861850}
   snapDistance: 0.5
+  isSnappedToPoint: 0
