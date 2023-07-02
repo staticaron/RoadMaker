@@ -49,9 +49,7 @@ public class RoadGenerator : MonoBehaviour
 			float directionLength = Mathf.Sqrt(Vector2.SqrMagnitude(directionDelta));
 
 			sampleRoad.transform.up = directionDelta.normalized;
-
 			sampleRoad.size = new Vector2(1, directionLength);
-			sampleRoad.color = new Color(sampleRoad.color.r, sampleRoad.color.g, sampleRoad.color.b, 0.5f);
 		}
 	}
 
@@ -84,7 +82,7 @@ public class RoadGenerator : MonoBehaviour
 
 				AddPoints();
 
-				sampleRoad.color = new Color(sampleRoad.color.r, sampleRoad.color.g, sampleRoad.color.b, 1.0f);
+				sampleRoad.GetComponent<RoadPiece>().FinishPlacement();
 				sampleRoad = null;
 
 				break;
