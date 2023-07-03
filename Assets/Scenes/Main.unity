@@ -301,8 +301,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2146305633}
   - component: {fileID: 2146305635}
-  - component: {fileID: 2146305634}
   - component: {fileID: 2146305636}
+  - component: {fileID: 2146305634}
   m_Layer: 0
   m_Name: RoadMaker
   m_TagString: Untagged
@@ -399,6 +399,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 51b52fad-b2bf-4b93-96e3-0240ad8eb025
     m_ActionName: General/DestroyRoad[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2146305636}
+        m_TargetAssemblyTypeName: RoadCursor, Assembly-CSharp
+        m_MethodName: ToggleLinearMovement
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 4cce7a23-3dfa-41cf-bea7-ed4df600410d
+    m_ActionName: General/LinearMode[/Keyboard/ctrl]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: General
@@ -416,7 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3477f16cb57f0a34db079829180d686e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadPlacementWay: 3
+  currentRoadGenerationMode: 3
   startPoint: {x: 0, y: 0}
   endPoint: {x: 0, y: 0}
   pointGap: 0.25
@@ -440,3 +456,4 @@ MonoBehaviour:
   roadCursor: {fileID: 392861850}
   snapDistance: 0.5
   isSnappedToPoint: 0
+  linearMode: 0

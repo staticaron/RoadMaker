@@ -3,154 +3,156 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public enum RoadPlacementWay
+public enum RoadGenerationMode
 {
-	CONSTRUCTING, PLACED, CANCELLED, NONE
+    CONSTRUCTING, PLACED, CANCELLED, NONE
 }
 
 public struct RoadPoint
 {
-	public GameObject parentRoadObject;
-	public Vector2 position;
+    public GameObject parentRoadObject;
+    public Vector2 position;
 
-	public RoadPoint(GameObject parent, Vector2 position)
-	{
-		this.parentRoadObject = parent;
-		this.position = position;
-	}
+    public RoadPoint(GameObject parent, Vector2 position)
+    {
+        this.parentRoadObject = parent;
+        this.position = position;
+    }
 }
 
 public class RoadGenerator : MonoBehaviour
 {
-	[Header("Road Settings")]
-	[SerializeField] RoadPlacementWay roadPlacementWay = RoadPlacementWay.NONE;
+    [Header("Road Settings")]
+    [SerializeField] RoadGenerationMode currentRoadGenerationMode = RoadGenerationMode.NONE;
 
-	[SerializeField] Vector2 startPoint;
-	[SerializeField] Vector2 endPoint;
+    public RoadGenerationMode CurrentRoadGenerationMode
+    {
+        get { return currentRoadGenerationMode; }
+        private set { currentRoadGenerationMode = value; }
+    }
 
-	[SerializeField] float pointGap;
-	[SerializeField] float minEndPointDistance;
+    public Vector2 StartPoint { get; private set; }
+    public Vector2 EndPoint { get; private set; }
 
-	[SerializeField] GameObject pointGO;
-	[SerializeField] RoadCursor roadCursor;
+    [SerializeField] float pointGap;
+    [SerializeField] float minEndPointDistance;
 
-	[Header("Road Visuals")]
-	[SerializeField] Sprite roadSprite;
-	[SerializeField] GameObject roadPrefab;
+    [SerializeField] GameObject pointGO;
+    [SerializeField] RoadCursor roadCursor;
 
-	private Dictionary<int, List<RoadPoint>> points;
+    [Header("Road Visuals")]
+    [SerializeField] Sprite roadSprite;
+    [SerializeField] GameObject roadPrefab;
 
-	private Camera mainCamera;
-	private SpriteRenderer sampleRoad;
+    private Dictionary<int, List<RoadPoint>> _points;
 
-	private void Awake()
-	{
-		if (mainCamera == null)
-			mainCamera = Camera.main;
+    private SpriteRenderer _sampleRoad;
 
-		points = new Dictionary<int, List<RoadPoint>>();
-	}
+    private void Awake()
+    {
+        _points = new Dictionary<int, List<RoadPoint>>();
+    }
 
-	private void Update()
-	{
-		if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING)
-		{
-			if (sampleRoad == null) sampleRoad = (Instantiate<GameObject>(roadPrefab, startPoint, Quaternion.identity)).GetComponent<SpriteRenderer>();
+    private void Update()
+    {
+        if (currentRoadGenerationMode == RoadGenerationMode.CONSTRUCTING)
+        {
+            if (_sampleRoad == null) _sampleRoad = (Instantiate<GameObject>(roadPrefab, StartPoint, Quaternion.identity)).GetComponent<SpriteRenderer>();
 
-			Vector2 directionDelta = (roadCursor.GetRoadCursorPosition() - startPoint);
-			float directionLength = Mathf.Sqrt(Vector2.SqrMagnitude(directionDelta));
+            Vector2 directionDelta = (roadCursor.RoadCursorPosition - StartPoint);
+            float directionLength = Mathf.Sqrt(Vector2.SqrMagnitude(directionDelta));
 
-			sampleRoad.transform.up = directionDelta.normalized;
-			sampleRoad.size = new Vector2(1, directionLength);
-		}
-	}
+            _sampleRoad.transform.up = directionDelta.normalized;
+            _sampleRoad.size = new Vector2(1, directionLength);
+        }
+    }
 
-	public void CreateRoadInput(InputAction.CallbackContext context)
-	{
-		switch (context.phase)
-		{
-			case InputActionPhase.Performed:
+    public void CreateRoadInput(InputAction.CallbackContext context)
+    {
+        switch (context.phase)
+        {
+            case InputActionPhase.Performed:
 
-				if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING) return;
+                if (currentRoadGenerationMode == RoadGenerationMode.CONSTRUCTING) return;
 
-				startPoint = roadCursor.GetRoadCursorPosition();
-				roadPlacementWay = RoadPlacementWay.CONSTRUCTING;
+                StartPoint = roadCursor.RoadCursorPosition;
+                currentRoadGenerationMode = RoadGenerationMode.CONSTRUCTING;
 
-				break;
+                break;
 
-			case InputActionPhase.Canceled:
+            case InputActionPhase.Canceled:
 
-				if (roadPlacementWay != RoadPlacementWay.CONSTRUCTING) return;
+                if (currentRoadGenerationMode != RoadGenerationMode.CONSTRUCTING) return;
 
-				endPoint = roadCursor.GetRoadCursorPosition();
+                EndPoint = roadCursor.RoadCursorPosition;
 
-				if (Vector2.SqrMagnitude(endPoint - startPoint) <= minEndPointDistance * minEndPointDistance)
-				{
-					roadPlacementWay = RoadPlacementWay.CANCELLED;
-					return;
-				}
+                if (Vector2.SqrMagnitude(EndPoint - StartPoint) <= minEndPointDistance * minEndPointDistance)
+                {
+                    currentRoadGenerationMode = RoadGenerationMode.CANCELLED;
+                    return;
+                }
 
-				roadPlacementWay = RoadPlacementWay.PLACED;
+                currentRoadGenerationMode = RoadGenerationMode.PLACED;
 
-				List<RoadPoint> newPoints = AddPoints(sampleRoad.gameObject);
+                List<RoadPoint> newPoints = AddPoints(_sampleRoad.gameObject);
 
-				sampleRoad.GetComponent<RoadPiece>().FinishPlacement(newPoints);
-				sampleRoad = null;
+                _sampleRoad.GetComponent<RoadPiece>().FinishPlacement(newPoints);
+                _sampleRoad = null;
 
-				break;
-		}
-	}
+                break;
+        }
+    }
 
-	public void Decline(InputAction.CallbackContext context)
-	{
-		if (context.phase != InputActionPhase.Performed) return;
+    public void Decline(InputAction.CallbackContext context)
+    {
+        if (context.phase != InputActionPhase.Performed) return;
 
-		if (roadPlacementWay == RoadPlacementWay.CONSTRUCTING)
-		{
-			roadPlacementWay = RoadPlacementWay.CANCELLED;
-			Destroy(sampleRoad.gameObject);
-			sampleRoad = null;
-		}
-	}
+        if (currentRoadGenerationMode == RoadGenerationMode.CONSTRUCTING)
+        {
+            currentRoadGenerationMode = RoadGenerationMode.CANCELLED;
+            Destroy(_sampleRoad.gameObject);
+            _sampleRoad = null;
+        }
+    }
 
-	private List<RoadPoint> AddPoints(GameObject parent)
-	{
-		List<RoadPoint> newPoints = new List<RoadPoint>();
+    private List<RoadPoint> AddPoints(GameObject parent)
+    {
+        List<RoadPoint> newPoints = new List<RoadPoint>();
 
-		Vector2 roadDirection = (endPoint - startPoint).normalized;
+        Vector2 roadDirection = (EndPoint - StartPoint).normalized;
 
-		RoadPoint point = new RoadPoint(parent, startPoint);
-		float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point.position));
+        RoadPoint point = new RoadPoint(parent, StartPoint);
+        float endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(EndPoint - point.position));
 
-		while (endPointDistance > pointGap)
-		{
-			newPoints.Add(point);
+        while (endPointDistance > pointGap)
+        {
+            newPoints.Add(point);
 
-			point = new RoadPoint(parent, point.position + (roadDirection * pointGap));
-			endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(endPoint - point.position));
-		}
+            point = new RoadPoint(parent, point.position + (roadDirection * pointGap));
+            endPointDistance = Mathf.Sqrt(Vector2.SqrMagnitude(EndPoint - point.position));
+        }
 
-		newPoints.Add(new RoadPoint(parent, endPoint));
+        newPoints.Add(new RoadPoint(parent, EndPoint));
 
-		points.Add(parent.GetInstanceID(), newPoints);
+        _points.Add(parent.GetInstanceID(), newPoints);
 
-		return newPoints;
-	}
+        return newPoints;
+    }
 
-	public Dictionary<int, List<RoadPoint>> GetPoints()
-	{
-		return points;
-	}
+    public Dictionary<int, List<RoadPoint>> GetPoints()
+    {
+        return _points;
+    }
 
-	public void DeleteRoad(InputAction.CallbackContext context)
-	{
-		if (context.phase != InputActionPhase.Performed) return;
+    public void DeleteRoad(InputAction.CallbackContext context)
+    {
+        if (context.phase != InputActionPhase.Performed) return;
 
-		GameObject currentSnappedPointParent = roadCursor.GetCurrentlySnappedPoint()?.parentRoadObject;
+        GameObject currentSnappedPointParent = roadCursor.CurrentlySnappedPoint?.parentRoadObject;
 
-		if (currentSnappedPointParent == null) return;
+        if (currentSnappedPointParent == null) return;
 
-		points.Remove(currentSnappedPointParent.GetInstanceID());
-		Destroy(currentSnappedPointParent);
-	}
+        _points.Remove(currentSnappedPointParent.GetInstanceID());
+        Destroy(currentSnappedPointParent);
+    }
 }
